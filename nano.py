@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import json, os, platform, subprocess, sys, threading, time, uuid
+import itertools, json, os, platform, subprocess, sys, threading, time, uuid
 from urllib.request import Request, urlopen
 from pathlib import Path
 from abc import ABC, abstractmethod
@@ -23,12 +23,13 @@ _TTY = sys.stderr.isatty()
 def _color(code, text):
     return f"\033[{code}m{text}\033[0m" if _TTY else text
 
-def _spinner(done, frames="-\\|/"):
-    index = 0
+def _spinner(done):
+    spinner = itertools.cycle(["-", "\\", "|", "/"])
     while not done.wait(0.1):
-        print(f"\r  {_color(90, frames[index % len(frames)] + ' thinking')}", end="", file=sys.stderr, flush=True)
-        index += 1
+        frame = next(spinner)
+        print(f"\r  {_color(90, frame + ' thinking')}", end="", file=sys.stderr, flush=True)
     print("\r             \r", end="", file=sys.stderr, flush=True)
+
 
 class LLMClient(ABC):
     def __init__(self):
